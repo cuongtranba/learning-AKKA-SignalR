@@ -1,0 +1,124 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<div id="game-app">
+    <div v-if="!isJoined">
+        <h2>Join Game</h2>
+        <form v-on:submit="joinGame">
+            <div class="form-group">
+                <label for="characterName">Character name</label>
+                <input v-model="newPlayerName" id="characterName" class="form-control" required="" type="text" />
+            </div>
+            <button type="submit">Join Game</button>
+        </form>
+    </div>
+    <div v-if="isJoined">
+        <h2><span>{{thisPlayer.playerName}}</span></h2>
+        <h3>Health</h3>
+        <p><span>{{thisPlayer.health}}</span></p>
+        <h3 v-if="!thisPlayer.isAlive" style="color: red">Dead</h3>
+    </div>
+
+    <div>
+        <h2>Other players</h2>
+        <div v-for="player in otherPlayers">
+
+            <hr />
+
+            <p>{{player.playerName}}</p>
+            <p>{{player.health}}</p>
+
+            <div v-if="player.isAlive">
+                <button v-on:click="attack(player.playerName)" type="button">Attack</button>
+            </div>
+
+            <h4 v-if="!player.isAlive" style="color: red">
+                Dead
+            </h4>
+
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts
+{
+
+    <script>
+        "use strict";
+
+        var gameHub = $.connection.gameHub;
+
+        gameHub.client.playerJoined = function (playerName, health) {
+            app.playerJoined(playerName, health);
+        };
+
+        gameHub.client.updatePlayerHealth = function (playerName, health) {
+            app.updatePlayerHealth(playerName, health);
+        };
+
+        $.connection.hub.start();
+
+        var PlayerViewModel = function (playerName, health) {
+            var self = this;
+            self.playerName = playerName;
+            self.isAlive = true;
+            self.health = health;
+            self.changeHealth = function (newHealth) {
+                self.health = newHealth;
+                if (newHealth <= 0) {
+                    self.isAlive = false;
+                }
+            };
+        }
+        var app = new Vue({
+            el: "#game-app",
+            data: {
+                thisPlayer: null,
+                isAlive: false,
+                otherPlayers: [],
+                newPlayerName: '',
+                isJoined: false
+            },
+            methods: {
+                joinGame: function (event) {
+                    event.preventDefault();
+                    gameHub.server.joinGame(this.newPlayerName);
+                },
+                attack: function (playerName) {
+                    gameHub.server.attack(playerName);
+                },
+                updatePlayerHealth: function (playerName, health) {
+                    if (this.thisPlayer.playerName === playerName) {
+                        this.thisPlayer.changeHealth(health);
+                    } else {
+                        this.otherPlayers.forEach(function (otherPlayer) {
+                            if (otherPlayer.playerName === playerName) {
+                                otherPlayer.changeHealth(health);
+                            }
+                        });
+                    }
+                },
+                playerJoined: function (playerName, health) {
+                    var isMe = playerName === this.newPlayerName;
+                    if (isMe) {
+                        this.thisPlayer = new PlayerViewModel(playerName, health);
+                        this.thisPlayer.changeHealth(health);
+                        this.isJoined = true;
+                    } else {
+                        var playerExistsInList = this.otherPlayers.some(function (element, index, array) {
+                            return element.playerName === playerName;
+                        });
+
+                        if (!playerExistsInList) {
+                            this.otherPlayers.push(new PlayerViewModel(playerName, health));
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}
