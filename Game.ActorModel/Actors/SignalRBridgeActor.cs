@@ -1,4 +1,5 @@
-﻿using Akka.Actor;
+﻿using System.Collections.Generic;
+using Akka.Actor;
 using Game.ActorModel.External;
 using Game.ActorModel.Messages;
 
@@ -34,6 +35,17 @@ namespace Game.ActorModel.Actors
             Receive<PlayerHealthChangedMessage>(message =>
             {
                 _gameEventsPusher.UpdatePlayerHealth(message.PlayerName, message.Health);
+                _gameController.Tell(message);
+            });
+
+            Receive<GetPlayerExistedMessage>(message =>
+            {
+                _gameController.Tell(new GetPlayerExistedMessage());
+            });
+
+            Receive<PlayerExistedMessage>(message =>
+            {
+                _gameEventsPusher.ShowExistedPlayers(message.PlayerNames);
             });
         }
     }

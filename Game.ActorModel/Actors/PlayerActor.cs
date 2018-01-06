@@ -23,5 +23,10 @@ namespace Game.ActorModel.Actors
                 Sender.Tell(new PlayerStatusMessage(_playerName, _health));
             });
         }
+
+        protected override void PostStop()
+        {
+            base.PostStop();
+        }
     }
 }

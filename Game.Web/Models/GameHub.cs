@@ -20,5 +20,13 @@ namespace Game.Web.Models
                 .SignalRBridge
                 .Tell(new AttackPlayerMessage(playerName),null);
         }
+
+        public void GetExistedPlayer()
+        {
+            GameActorSystem
+                .ActorReferences
+                .SignalRBridge
+                .Tell(new GetPlayerExistedMessage(), null);
+        }
     }
 }

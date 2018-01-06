@@ -1,4 +1,6 @@
-﻿using Game.ActorModel.External;
+﻿using System.Collections.Generic;
+using Game.ActorModel.External;
+using Game.ActorModel.Messages;
 using Microsoft.AspNet.SignalR;
 
 namespace Game.Web.Models
@@ -20,6 +22,11 @@ namespace Game.Web.Models
         public void UpdatePlayerHealth(string playerName, int playerHealth)
         {
             _gameHubContext.Clients.All.updatePlayerHealth(playerName, playerHealth);
+        }
+
+        public void ShowExistedPlayers(List<PlayerProfile> players)
+        {
+            _gameHubContext.Clients.All.ShowExistedPlayers(players);
         }
     }
 }

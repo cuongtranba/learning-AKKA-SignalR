@@ -56,7 +56,10 @@
     <Compile Include="Actors\SignalRBridgeActor.cs" />
     <Compile Include="External\IGameEventsPusher.cs" />
     <Compile Include="Messages\AttackPlayerMessage.cs" />
+    <Compile Include="Messages\GetPlayerExistedMessage.cs" />
+    <Compile Include="Messages\GetPlayerHealth.cs" />
     <Compile Include="Messages\JoinGameMessage.cs" />
+    <Compile Include="Messages\PlayerExistedMessage.cs" />
     <Compile Include="Messages\PlayerHealthChangedMessaeg.cs" />
     <Compile Include="Messages\PlayerStatusMessage.cs" />
     <Compile Include="Messages\RefreshPlayerStatusMessage.cs" />
