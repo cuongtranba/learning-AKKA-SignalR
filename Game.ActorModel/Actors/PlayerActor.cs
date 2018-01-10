@@ -1,9 +1,10 @@
 ﻿using Akka.Actor;
+using Akka.Persistence;
 using Game.ActorModel.Messages;
 
 namespace Game.ActorModel.Actors
 {
-    public class PlayerActor : ReceiveActor
+    public class PlayerActor : ReceivePersistentActor
     {
         public static Props Props(string playerName) => Akka.Actor.Props.Create(() => new PlayerActor(playerName));
         private readonly string _playerName;
@@ -13,20 +14,25 @@ namespace Game.ActorModel.Actors
         {
             _playerName = playerName;
             _health = 100;
-            Receive<AttackPlayerMessage>(message =>
+            Command<AttackPlayerMessage>(message =>
             {
-                this._health -= 20;
-                Sender.Tell(new PlayerHealthChangedMessage(_playerName, _health));
+                Persist(message, playerMessage =>
+                {
+                    this._health -= 20;
+                    Sender.Tell(new PlayerHealthChangedMessage(_playerName, _health));
+                });
             });
-            Receive<RefreshPlayerStatusMessage>(message =>
+            Command<RefreshPlayerStatusMessage>(message =>
             {
                 Sender.Tell(new PlayerStatusMessage(_playerName, _health));
             });
+
+            Recover<AttackPlayerMessage>(message =>
+            {
+                this._health -= 20;
+            });
         }
 
-        protected override void PostStop()
-        {
-            base.PostStop();
-        }
+        public override string PersistenceId => _playerName;
     }
 }
